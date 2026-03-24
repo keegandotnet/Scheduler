@@ -86,6 +86,61 @@ a {
   color: #000;
 }
 
+.create-shift-form {
+  margin-bottom: 2rem;
+  padding: 1.25rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background: #fafafa;
+}
+
+.create-shift-form h2 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+}
+
+.create-shift-fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: flex-end;
+}
+
+.create-shift-fields label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.create-shift-fields select,
+.create-shift-fields input {
+  padding: 0.4rem 0.6rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 0.95rem;
+}
+
+.create-shift-fields button {
+  padding: 0.45rem 1.25rem;
+  background: #000;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.create-shift-fields button:disabled {
+  background: #999;
+  cursor: not-allowed;
+}
+
+.create-shift-fields button:hover:not(:disabled) {
+  background: #333;
+}
+
 .login-page {
   display: flex;
   flex-direction: column;

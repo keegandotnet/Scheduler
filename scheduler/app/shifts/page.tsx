@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 import { createAuthClient } from '../../lib/supabase-auth';
 import { supabase } from '../../lib/supabase';
 import ShiftsTable from '../components/ShiftsTable';
+import CreateShiftForm from '../components/CreateShiftForm';
 
 export default async function ShiftsPage() {
   const authClient = await createAuthClient();
@@ -28,15 +29,23 @@ export default async function ShiftsPage() {
         }
         return res;
       }),
-    supabase.from('profiles').select('id, full_name'),
+    supabase.from('profiles').select('id, full_name, role'),
     supabase.from('positions').select('id, name'),
   ]);
 
   const profileMap = Object.fromEntries((profiles ?? []).map((p) => [p.id, p.full_name]));
   const positionMap = Object.fromEntries((positions ?? []).map((p) => [p.id, p.name]));
 
+  const employees = (profiles ?? []).filter((p) => p.role === 'employee') as { id: string; full_name: string }[];
+
   return (
     <main>
+      {!isEmployee && (
+        <CreateShiftForm
+          employees={employees}
+          positions={(positions ?? []) as { id: string; name: string }[]}
+        />
+      )}
       <ShiftsTable shifts={shifts ?? []} profileMap={profileMap} positionMap={positionMap} />
     </main>
   );
