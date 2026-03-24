@@ -238,15 +238,10 @@ function NeedsAttentionRow({ icon, label, count, href, bg, last }: { icon: React
   return (
     <a
       href={href}
+      className="needs-attention-row"
       style={{
-        display: 'flex', alignItems: 'center', gap: '0.75rem',
-        padding: '1rem 1.25rem',
         borderBottom: last ? 'none' : '1px solid #f3f4f6',
-        textDecoration: 'none',
-        transition: 'background 0.15s',
       }}
-      onMouseOver={(e) => (e.currentTarget.style.background = '#f9fafb')}
-      onMouseOut={(e) => (e.currentTarget.style.background = 'transparent')}
     >
       <div style={{ width: '2rem', height: '2rem', borderRadius: '0.4rem', background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
         {icon}
