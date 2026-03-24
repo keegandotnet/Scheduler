@@ -86,6 +86,50 @@ a {
   color: #000;
 }
 
+.row-actions {
+  white-space: nowrap;
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.btn-edit, .btn-delete, .btn-save, .btn-cancel {
+  padding: 0.2rem 0.6rem;
+  font-size: 0.8rem;
+  border-radius: 4px;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+
+.btn-edit {
+  background: #f0f0f0;
+  border-color: #ccc;
+}
+
+.btn-edit:hover { background: #e0e0e0; }
+
+.btn-delete {
+  background: #fff0f0;
+  border-color: #f5c6c6;
+  color: #c00;
+}
+
+.btn-delete:hover { background: #ffe0e0; }
+
+.btn-save {
+  background: #000;
+  color: #fff;
+}
+
+.btn-save:hover { background: #333; }
+
+.btn-cancel {
+  background: #f0f0f0;
+  border-color: #ccc;
+}
+
+.btn-cancel:hover { background: #e0e0e0; }
+
 .create-shift-form {
   margin-bottom: 2rem;
   padding: 1.25rem;

@@ -36,17 +36,25 @@ export default async function ShiftsPage() {
   const profileMap = Object.fromEntries((profiles ?? []).map((p) => [p.id, p.full_name]));
   const positionMap = Object.fromEntries((positions ?? []).map((p) => [p.id, p.name]));
 
-  const employees = (profiles ?? []).filter((p) => p.role === 'employee') as { id: string; full_name: string }[];
+  const employees = (profiles ?? [])
+    .filter((p) => p.role === 'employee')
+    .map(({ id, full_name }) => ({ id, full_name }));
+
+  const positionList = (positions ?? []).map(({ id, name }) => ({ id, name }));
 
   return (
     <main>
       {!isEmployee && (
-        <CreateShiftForm
-          employees={employees}
-          positions={(positions ?? []) as { id: string; name: string }[]}
-        />
+        <CreateShiftForm employees={employees} positions={positionList} />
       )}
-      <ShiftsTable shifts={shifts ?? []} profileMap={profileMap} positionMap={positionMap} />
+      <ShiftsTable
+        shifts={shifts ?? []}
+        profileMap={profileMap}
+        positionMap={positionMap}
+        isManager={!isEmployee}
+        employees={employees}
+        positions={positionList}
+      />
     </main>
   );
 }
