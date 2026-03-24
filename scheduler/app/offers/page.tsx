@@ -22,13 +22,17 @@ export default async function OffersPage() {
     supabase.from('profiles').select('id, full_name'),
     supabase.from('positions').select('id, name'),
     supabase.from('shift_offers').select('id, shift_id, offered_by, message, status').eq('status', 'open'),
-    supabase.from('shift_claims').select('offer_id').eq('claimant_id', claims.sub),
+    supabase.from('shift_claims').select('id, offer_id, status').eq('claimant_id', claims.sub),
   ]);
 
   const profileMap = Object.fromEntries((profiles ?? []).map((p) => [p.id, p.full_name]));
   const positionMap = Object.fromEntries((positions ?? []).map((p) => [p.id, p.name]));
   const shiftMap = Object.fromEntries((shifts ?? []).map((s) => [s.id, s]));
-  const claimedOfferIds = new Set((myClaims ?? []).map((c) => c.offer_id));
+
+  // offer_id → { id, status } for current user's claims
+  const myClaimByOfferId: Record<string, { id: string; status: string }> = Object.fromEntries(
+    (myClaims ?? []).map((c) => [c.offer_id, { id: c.id, status: c.status }])
+  );
 
   return (
     <main>
@@ -38,7 +42,7 @@ export default async function OffersPage() {
         profileMap={profileMap}
         positionMap={positionMap}
         currentUserId={isEmployee ? claims.sub : undefined}
-        claimedOfferIds={claimedOfferIds}
+        myClaimByOfferId={myClaimByOfferId}
       />
     </main>
   );

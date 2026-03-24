@@ -2,7 +2,7 @@
 
 import { Fragment, useState } from 'react';
 import { deleteShift, updateShift } from '../actions/shifts';
-import { createOffer } from '../actions/offers';
+import { createOffer, withdrawOffer } from '../actions/offers';
 
 type Shift = {
   id: string;
@@ -24,7 +24,7 @@ type Props = {
   employees?: Profile[];
   positions?: Position[];
   currentUserId?: string;
-  offeredShiftIds?: Set<string>;
+  myOpenOfferByShiftId?: Record<string, string>;
   title?: string;
   readonly?: boolean;
 };
@@ -50,7 +50,7 @@ export default function ShiftsTable({
   employees = [],
   positions = [],
   currentUserId,
-  offeredShiftIds = new Set(),
+  myOpenOfferByShiftId = {},
   title = 'Shifts',
   readonly = false,
 }: Props) {
@@ -121,7 +121,8 @@ export default function ShiftsTable({
             const isEditing = editingId === shift.id;
             const isOffering = offeringShiftId === shift.id;
             const isOwn = shift.owner_id === currentUserId;
-            const alreadyOffered = offeredShiftIds.has(shift.id);
+            const myOfferId = myOpenOfferByShiftId[shift.id];
+            const alreadyOffered = !!myOfferId;
 
             return (
               <Fragment key={shift.id}>
@@ -166,7 +167,15 @@ export default function ShiftsTable({
                       {!readonly && !isManager && isOwn && (
                         <td className="row-actions">
                           {alreadyOffered ? (
-                            <span className="offered-badge">Offered</span>
+                            <>
+                              <span className="offered-badge">Offered</span>
+                              <button
+                                className="btn-delete"
+                                onClick={() => withdrawOffer(myOfferId)}
+                              >
+                                Cancel
+                              </button>
+                            </>
                           ) : (
                             <button
                               className="btn-offer"

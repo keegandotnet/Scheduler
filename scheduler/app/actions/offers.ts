@@ -160,3 +160,43 @@ export async function denyClaim(claimId: string) {
 
   revalidatePath('/claims');
 }
+
+export async function withdrawOffer(offerId: string) {
+  const user = await getAuthenticatedUser();
+  if (!user || user.role !== 'employee') return;
+
+  const { data: offer } = await supabase
+    .from('shift_offers')
+    .select('shift_id, offered_by')
+    .eq('id', offerId)
+    .single();
+
+  if (!offer || offer.offered_by !== user.id) return;
+
+  // Remove any pending claims first, then the offer itself
+  await supabase.from('shift_claims').delete().eq('offer_id', offerId);
+  await supabase.from('shift_offers').delete().eq('id', offerId);
+  await supabase.from('shifts').update({ status: 'scheduled' }).eq('id', offer.shift_id);
+
+  revalidatePath('/shifts');
+  revalidatePath('/offers');
+  revalidatePath('/claims');
+}
+
+export async function withdrawClaim(claimId: string) {
+  const user = await getAuthenticatedUser();
+  if (!user || user.role !== 'employee') return;
+
+  const { data: claim } = await supabase
+    .from('shift_claims')
+    .select('claimant_id, status')
+    .eq('id', claimId)
+    .single();
+
+  if (!claim || claim.claimant_id !== user.id || claim.status !== 'pending') return;
+
+  await supabase.from('shift_claims').delete().eq('id', claimId);
+
+  revalidatePath('/offers');
+  revalidatePath('/claims');
+}

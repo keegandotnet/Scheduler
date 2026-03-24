@@ -1,7 +1,7 @@
 'use client';
 
 import { Fragment, useState } from 'react';
-import { createClaim } from '../actions/offers';
+import { createClaim, withdrawClaim } from '../actions/offers';
 
 type Shift = {
   id: string;
@@ -22,7 +22,7 @@ type Props = {
   profileMap: Record<string, string>;
   positionMap: Record<string, string>;
   currentUserId?: string;
-  claimedOfferIds?: Set<string>;
+  myClaimByOfferId?: Record<string, { id: string; status: string }>;
 };
 
 export default function OffersTable({
@@ -31,7 +31,7 @@ export default function OffersTable({
   profileMap,
   positionMap,
   currentUserId,
-  claimedOfferIds = new Set(),
+  myClaimByOfferId = {},
 }: Props) {
   const [claimingOfferId, setClaimingOfferId] = useState<string | null>(null);
   const [claimMessage, setClaimMessage] = useState('');
@@ -67,7 +67,7 @@ export default function OffersTable({
           {offers.map((offer) => {
             const shift = shiftMap[offer.shift_id];
             const isOwn = offer.offered_by === currentUserId;
-            const alreadyClaimed = claimedOfferIds.has(offer.id);
+            const myClaim = myClaimByOfferId[offer.id];
             const isClaiming = claimingOfferId === offer.id;
 
             return (
@@ -81,8 +81,20 @@ export default function OffersTable({
                     <td className="row-actions">
                       {isOwn ? (
                         <span className="offered-badge">Your offer</span>
-                      ) : alreadyClaimed ? (
-                        <span className="offered-badge">Claimed</span>
+                      ) : myClaim ? (
+                        myClaim.status === 'pending' ? (
+                          <>
+                            <span className="offered-badge">Claimed</span>
+                            <button
+                              className="btn-delete"
+                              onClick={() => withdrawClaim(myClaim.id)}
+                            >
+                              Withdraw
+                            </button>
+                          </>
+                        ) : (
+                          <span className="offered-badge">{myClaim.status}</span>
+                        )
                       ) : (
                         <button
                           className="btn-offer"

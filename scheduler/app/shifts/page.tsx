@@ -19,8 +19,9 @@ export default async function ShiftsPage() {
     .single();
 
   const isEmployee = profile?.role === 'employee';
+  const now = new Date().toISOString();
 
-  const [{ data: allShifts }, { data: profiles }, { data: positions }, { data: openOffers }] = await Promise.all([
+  const [{ data: allShifts }, { data: profiles }, { data: positions }, { data: myOpenOffers }] = await Promise.all([
     supabase
       .from('shifts')
       .select('id, owner_id, position_id, start_time, end_time, status')
@@ -33,7 +34,12 @@ export default async function ShiftsPage() {
       }),
     supabase.from('profiles').select('id, full_name, role'),
     supabase.from('positions').select('id, name'),
-    supabase.from('shift_offers').select('shift_id').eq('status', 'open'),
+    // Only need current user's own open offers (for the withdraw button)
+    supabase
+      .from('shift_offers')
+      .select('id, shift_id')
+      .eq('offered_by', claims.sub)
+      .eq('status', 'open'),
   ]);
 
   const profileMap = Object.fromEntries((profiles ?? []).map((p) => [p.id, p.full_name]));
@@ -44,9 +50,18 @@ export default async function ShiftsPage() {
     .map(({ id, full_name }) => ({ id, full_name }));
 
   const positionList = (positions ?? []).map(({ id, name }) => ({ id, name }));
-  const offeredShiftIds = new Set((openOffers ?? []).map((o) => o.shift_id));
 
-  const activeShifts = (allShifts ?? []).filter((s) => ACTIVE_STATUSES.includes(s.status));
+  // shift_id → offer_id for current user's open offers
+  const myOpenOfferByShiftId: Record<string, string> = Object.fromEntries(
+    (myOpenOffers ?? []).map((o) => [o.shift_id, o.id])
+  );
+
+  const activeShifts = (allShifts ?? []).filter(
+    (s) => s.end_time >= now && ACTIVE_STATUSES.includes(s.status)
+  );
+  const pastShifts = (allShifts ?? []).filter(
+    (s) => s.end_time < now && s.status !== 'completed'
+  );
   const completedShifts = (allShifts ?? []).filter((s) => s.status === 'completed');
 
   return (
@@ -62,8 +77,20 @@ export default async function ShiftsPage() {
         employees={employees}
         positions={positionList}
         currentUserId={isEmployee ? claims.sub : undefined}
-        offeredShiftIds={offeredShiftIds}
+        myOpenOfferByShiftId={myOpenOfferByShiftId}
       />
+      {pastShifts.length > 0 && (
+        <ShiftsTable
+          shifts={pastShifts}
+          profileMap={profileMap}
+          positionMap={positionMap}
+          isManager={false}
+          employees={[]}
+          positions={positionList}
+          title="Past Shifts"
+          readonly
+        />
+      )}
       {completedShifts.length > 0 && (
         <ShiftsTable
           shifts={completedShifts}
@@ -72,8 +99,6 @@ export default async function ShiftsPage() {
           isManager={false}
           employees={[]}
           positions={positionList}
-          currentUserId={undefined}
-          offeredShiftIds={new Set()}
           title="Completed Swaps"
           readonly
         />
