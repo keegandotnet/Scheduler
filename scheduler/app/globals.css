@@ -42,6 +42,41 @@ a {
   text-decoration: none;
 }
 
+main {
+  padding: 2rem;
+}
+
+h1 {
+  margin-bottom: 0.75rem;
+}
+
+h2 {
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+th,
+td {
+  border: 1px solid #ddd;
+  padding: 0.6rem 1rem;
+  text-align: left;
+}
+
+th {
+  background: #f4f4f4;
+  font-weight: 600;
+}
+
+tr:nth-child(even) {
+  background: #fafafa;
+}
+
 @media (prefers-color-scheme: dark) {
   html {
     color-scheme: dark;
