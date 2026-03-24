@@ -1,7 +1,7 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
 
   const supabase = createServerClient(
@@ -23,8 +23,8 @@ export async function middleware(request: NextRequest) {
     }
   );
 
-  // Validate JWT locally and refresh if needed
-  const { data: { claims } } = await supabase.auth.getClaims();
+  const { data } = await supabase.auth.getClaims();
+  const claims = data?.claims ?? null;
 
   const { pathname } = request.nextUrl;
   const isLoginPage = pathname === '/login';

@@ -5,7 +5,8 @@ import OffersTable from '../components/OffersTable';
 
 export default async function OffersPage() {
   const authClient = await createAuthClient();
-  const { data: { claims } } = await authClient.auth.getClaims();
+  const { data: claimsData } = await authClient.auth.getClaims();
+  const claims = claimsData?.claims ?? null;
   if (!claims) redirect('/login');
 
   const { data: profile } = await supabase

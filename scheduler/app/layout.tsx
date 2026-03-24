@@ -27,7 +27,8 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const authClient = await createAuthClient();
-  const { data: { claims } } = await authClient.auth.getClaims();
+  const { data: claimsData } = await authClient.auth.getClaims();
+  const claims = claimsData?.claims ?? null;
 
   let userName: string | null = null;
   let userRole: string | null = null;

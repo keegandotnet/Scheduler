@@ -5,7 +5,8 @@ import ClaimsTable from '../components/ClaimsTable';
 
 export default async function ClaimsPage() {
   const authClient = await createAuthClient();
-  const { data: { claims } } = await authClient.auth.getClaims();
+  const { data: claimsData } = await authClient.auth.getClaims();
+  const claims = claimsData?.claims ?? null;
   if (!claims) redirect('/login');
 
   const { data: profile } = await supabase
