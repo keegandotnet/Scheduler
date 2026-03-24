@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import Link from 'next/link';
-import { CalendarDays, ArrowLeftRight, ClipboardList, LogOut } from 'lucide-react';
+import { LayoutDashboard, CalendarDays, ArrowLeftRight, ClipboardList, LogOut } from 'lucide-react';
 import { createAuthClient } from '../lib/supabase-auth';
 import { supabase } from '../lib/supabase';
 import { logout } from './actions/auth';
@@ -55,6 +55,10 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
               </div>
               <hr className="sidebar-divider" />
               <nav className="sidebar-nav">
+                <Link href="/dashboard" className="sidebar-link">
+                  <LayoutDashboard size={16} />
+                  Dashboard
+                </Link>
                 <Link href="/shifts" className="sidebar-link">
                   <CalendarDays size={16} />
                   Shifts
