@@ -86,6 +86,8 @@ export default function ShiftsView({
           profileMap={profileMap}
           positionMap={positionMap}
           positionIds={positionIds}
+          currentUserId={currentUserId}
+          myOpenOfferByShiftId={myOpenOfferByShiftId}
         />
       ) : (
         <>

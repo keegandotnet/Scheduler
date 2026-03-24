@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { ChevronLeft, ChevronRight, X, User, Briefcase, Clock, Tag } from 'lucide-react';
+import { ChevronLeft, ChevronRight, X, User, Briefcase, Clock, Tag, ArrowLeftRight } from 'lucide-react';
+import { createOffer, withdrawOffer } from '../actions/offers';
 
 type Shift = {
   id: string;
@@ -17,6 +18,8 @@ type Props = {
   profileMap: Record<string, string>;
   positionMap: Record<string, string>;
   positionIds: string[];
+  currentUserId?: string;
+  myOpenOfferByShiftId?: Record<string, string>;
 };
 
 const PX_PER_HOUR = 64;
@@ -82,9 +85,12 @@ function fmtDuration(start: string, end: string): string {
   return `${h % 1 === 0 ? h : h.toFixed(1)} hour${h !== 1 ? 's' : ''}`;
 }
 
-export default function WeekCalendar({ shifts, profileMap, positionMap, positionIds }: Props) {
-  const [weekStart, setWeekStart] = useState<Date>(() => startOfWeek(new Date()));
-  const [selected, setSelected]   = useState<Shift | null>(null);
+export default function WeekCalendar({ shifts, profileMap, positionMap, positionIds, currentUserId, myOpenOfferByShiftId = {} }: Props) {
+  const [weekStart, setWeekStart]   = useState<Date>(() => startOfWeek(new Date()));
+  const [selected, setSelected]     = useState<Shift | null>(null);
+  const [offerMessage, setOfferMessage] = useState('');
+  const [offerError, setOfferError]     = useState('');
+  const [showOfferForm, setShowOfferForm] = useState(false);
   const today    = new Date();
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
   const hours    = Array.from({ length: TOTAL_HOURS }, (_, i) => START_HOUR + i);
@@ -202,7 +208,7 @@ export default function WeekCalendar({ shifts, profileMap, positionMap, position
       {selected && (
         <div
           style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200, padding: '1rem' }}
-          onClick={(e) => { if (e.target === e.currentTarget) setSelected(null); }}
+          onClick={(e) => { if (e.target === e.currentTarget) { setSelected(null); setShowOfferForm(false); setOfferError(''); } }}
         >
           <div className="card" style={{ width: '100%', maxWidth: 420, padding: '1.5rem', position: 'relative' }}>
             {/* Color accent bar */}
@@ -213,7 +219,7 @@ export default function WeekCalendar({ shifts, profileMap, positionMap, position
                 <h2 style={{ margin: 0, fontSize: '1rem', fontWeight: 700, color: '#111827' }}>Shift Details</h2>
                 <p style={{ margin: '0.2rem 0 0', fontSize: '0.75rem', color: '#6b7280' }}>{fmtFullDate(selected.start_time)}</p>
               </div>
-              <button className="btn btn-ghost btn-sm" onClick={() => setSelected(null)} style={{ marginTop: '-0.25rem' }}>
+              <button className="btn btn-ghost btn-sm" onClick={() => { setSelected(null); setShowOfferForm(false); setOfferError(''); }} style={{ marginTop: '-0.25rem' }}>
                 <X size={15} />
               </button>
             </div>
@@ -236,6 +242,66 @@ export default function WeekCalendar({ shifts, profileMap, positionMap, position
                 }
               />
             </div>
+
+            {/* Swap action for employees who own this shift */}
+            {currentUserId && selected.owner_id === currentUserId && (
+              <div style={{ marginTop: '1.25rem', borderTop: '1px solid #f3f4f6', paddingTop: '1.25rem' }}>
+                {myOpenOfferByShiftId[selected.id] ? (
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <span className="offered-badge">Offered for swap</span>
+                    <button
+                      className="btn btn-danger btn-sm"
+                      onClick={async () => {
+                        await withdrawOffer(myOpenOfferByShiftId[selected.id]);
+                        setSelected(null);
+                      }}
+                    >
+                      <X size={13} /> Cancel Offer
+                    </button>
+                  </div>
+                ) : showOfferForm ? (
+                  <div className="inline-form">
+                    <textarea
+                      placeholder="Add a note for the manager (optional)…"
+                      value={offerMessage}
+                      onChange={(e) => setOfferMessage(e.target.value)}
+                      rows={2}
+                      style={{ fontFamily: 'inherit' }}
+                    />
+                    {offerError && <p className="inline-form-error">{offerError}</p>}
+                    <div className="inline-form-actions">
+                      <button
+                        className="btn btn-primary btn-sm"
+                        onClick={async () => {
+                          setOfferError('');
+                          const result = await createOffer(selected.id, offerMessage);
+                          if (result?.error) {
+                            setOfferError(result.error);
+                          } else {
+                            setSelected(null);
+                            setShowOfferForm(false);
+                            setOfferMessage('');
+                          }
+                        }}
+                      >
+                        Submit Offer
+                      </button>
+                      <button className="btn btn-ghost btn-sm" onClick={() => { setShowOfferForm(false); setOfferError(''); }}>
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    className="btn btn-ghost"
+                    style={{ width: '100%', justifyContent: 'center' }}
+                    onClick={() => setShowOfferForm(true)}
+                  >
+                    <ArrowLeftRight size={15} /> Offer for Swap
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         </div>
       )}
