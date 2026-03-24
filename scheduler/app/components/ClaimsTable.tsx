@@ -59,7 +59,7 @@ export default function ClaimsTable({
             const isPending = claim.status === 'pending';
 
             return (
-              <tr key={claim.id} className={claim.status === 'denied' ? 'row-denied' : claim.status === 'approved' ? 'row-approved' : ''}>
+              <tr key={claim.id} className={claim.status === 'rejected' ? 'row-denied' : claim.status === 'approved' ? 'row-approved' : ''}>
                 <td>{profileMap[claim.claimant_id] ?? claim.claimant_id}</td>
                 <td>{shift ? new Date(shift.start_time).toLocaleString() : '—'}</td>
                 <td>{shift ? positionMap[shift.position_id] : '—'}</td>

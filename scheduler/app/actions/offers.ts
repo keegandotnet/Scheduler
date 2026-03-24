@@ -135,7 +135,7 @@ export async function approveClaim(claimId: string) {
 
   await supabase
     .from('shift_claims')
-    .update({ status: 'denied' })
+    .update({ status: 'rejected' })
     .eq('offer_id', claim.offer_id)
     .neq('id', claimId);
 
@@ -155,7 +155,7 @@ export async function denyClaim(claimId: string) {
 
   await supabase
     .from('shift_claims')
-    .update({ status: 'denied' })
+    .update({ status: 'rejected' })
     .eq('id', claimId);
 
   revalidatePath('/claims');
