@@ -11,6 +11,7 @@ type Shift = {
 type Offer = {
   id: string;
   shift_id: string;
+  offered_by: string;
 };
 
 type Claim = {
@@ -44,6 +45,7 @@ export default function ClaimsTable({
       <table>
         <thead>
           <tr>
+            <th>Offered By</th>
             <th>Claimant</th>
             <th>Shift Date</th>
             <th>Position</th>
@@ -60,6 +62,7 @@ export default function ClaimsTable({
 
             return (
               <tr key={claim.id} className={claim.status === 'rejected' ? 'row-denied' : claim.status === 'approved' ? 'row-approved' : ''}>
+                <td>{offer ? (profileMap[offer.offered_by] ?? offer.offered_by) : '—'}</td>
                 <td>{profileMap[claim.claimant_id] ?? claim.claimant_id}</td>
                 <td>{shift ? new Date(shift.start_time).toLocaleString() : '—'}</td>
                 <td>{shift ? positionMap[shift.position_id] : '—'}</td>

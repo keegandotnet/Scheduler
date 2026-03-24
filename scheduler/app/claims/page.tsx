@@ -21,7 +21,7 @@ export default async function ClaimsPage() {
     supabase.from('shifts').select('id, position_id, start_time'),
     supabase.from('profiles').select('id, full_name'),
     supabase.from('positions').select('id, name'),
-    supabase.from('shift_offers').select('id, shift_id'),
+    supabase.from('shift_offers').select('id, shift_id, offered_by'),
     supabase.from('shift_claims').select('id, offer_id, claimant_id, message, status'),
   ]);
 
