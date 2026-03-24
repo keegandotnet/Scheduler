@@ -18,7 +18,7 @@ export default async function ShiftsPage() {
 
   const isEmployee = profile?.role === 'employee';
 
-  const [{ data: shifts }, { data: profiles }, { data: positions }] = await Promise.all([
+  const [{ data: shifts }, { data: profiles }, { data: positions }, { data: openOffers }] = await Promise.all([
     supabase
       .from('shifts')
       .select('id, owner_id, position_id, start_time, end_time, status')
@@ -31,6 +31,7 @@ export default async function ShiftsPage() {
       }),
     supabase.from('profiles').select('id, full_name, role'),
     supabase.from('positions').select('id, name'),
+    supabase.from('shift_offers').select('shift_id').eq('status', 'open'),
   ]);
 
   const profileMap = Object.fromEntries((profiles ?? []).map((p) => [p.id, p.full_name]));
@@ -41,6 +42,7 @@ export default async function ShiftsPage() {
     .map(({ id, full_name }) => ({ id, full_name }));
 
   const positionList = (positions ?? []).map(({ id, name }) => ({ id, name }));
+  const offeredShiftIds = new Set((openOffers ?? []).map((o) => o.shift_id));
 
   return (
     <main>
@@ -54,6 +56,8 @@ export default async function ShiftsPage() {
         isManager={!isEmployee}
         employees={employees}
         positions={positionList}
+        currentUserId={isEmployee ? claims.sub : undefined}
+        offeredShiftIds={offeredShiftIds}
       />
     </main>
   );

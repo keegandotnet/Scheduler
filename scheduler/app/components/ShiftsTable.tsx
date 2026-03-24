@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { deleteShift, updateShift } from '../actions/shifts';
+import { createOffer } from '../actions/offers';
 
 type Shift = {
   id: string;
@@ -22,6 +23,8 @@ type Props = {
   isManager?: boolean;
   employees?: Profile[];
   positions?: Position[];
+  currentUserId?: string;
+  offeredShiftIds?: Set<string>;
 };
 
 type Draft = {
@@ -44,6 +47,8 @@ export default function ShiftsTable({
   isManager = false,
   employees = [],
   positions = [],
+  currentUserId,
+  offeredShiftIds = new Set(),
 }: Props) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draft, setDraft] = useState<Draft | null>(null);
@@ -87,7 +92,7 @@ export default function ShiftsTable({
             <th>Start</th>
             <th>End</th>
             <th>Status</th>
-            {isManager && <th></th>}
+            {(isManager || !!currentUserId) && <th></th>}
           </tr>
         </thead>
         <tbody>
@@ -140,6 +145,18 @@ export default function ShiftsTable({
                         <button className="btn-delete" onClick={() => deleteShift(shift.id)}>Delete</button>
                       </td>
                     )}
+                    {!isManager && shift.owner_id === currentUserId && (
+                      <td className="row-actions">
+                        {offeredShiftIds.has(shift.id) ? (
+                          <span className="offered-badge">Offered</span>
+                        ) : (
+                          <button className="btn-offer" onClick={() => createOffer(shift.id)}>
+                            Offer for Swap
+                          </button>
+                        )}
+                      </td>
+                    )}
+                    {!isManager && shift.owner_id !== currentUserId && <td />}
                   </>
                 )}
               </tr>

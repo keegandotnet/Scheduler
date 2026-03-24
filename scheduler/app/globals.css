@@ -130,6 +130,24 @@ a {
 
 .btn-cancel:hover { background: #e0e0e0; }
 
+.btn-offer {
+  padding: 0.2rem 0.6rem;
+  font-size: 0.8rem;
+  border-radius: 4px;
+  cursor: pointer;
+  background: #eef4ff;
+  border: 1px solid #b3ccf5;
+  color: #2255bb;
+}
+
+.btn-offer:hover { background: #ddeaff; }
+
+.offered-badge {
+  font-size: 0.78rem;
+  color: #888;
+  font-style: italic;
+}
+
 .create-shift-form {
   margin-bottom: 2rem;
   padding: 1.25rem;

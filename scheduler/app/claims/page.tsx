@@ -32,7 +32,14 @@ export default async function ClaimsPage() {
 
   return (
     <main>
-      <ClaimsTable claims={shiftClaims ?? []} offerMap={offerMap} shiftMap={shiftMap} profileMap={profileMap} positionMap={positionMap} />
+      <ClaimsTable
+        claims={shiftClaims ?? []}
+        offerMap={offerMap}
+        shiftMap={shiftMap}
+        profileMap={profileMap}
+        positionMap={positionMap}
+        isManager={true}
+      />
     </main>
   );
 }

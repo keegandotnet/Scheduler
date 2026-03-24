@@ -1,3 +1,7 @@
+'use client';
+
+import { approveClaim, denyClaim } from '../actions/offers';
+
 type Shift = {
   id: string;
   position_id: string;
@@ -13,7 +17,7 @@ type Claim = {
   id: string;
   offer_id: string;
   claimant_id: string;
-  message: string;
+  message: string | null;
   status: string;
 };
 
@@ -23,9 +27,17 @@ type Props = {
   shiftMap: Record<string, Shift>;
   profileMap: Record<string, string>;
   positionMap: Record<string, string>;
+  isManager?: boolean;
 };
 
-export default function ClaimsTable({ claims, offerMap, shiftMap, profileMap, positionMap }: Props) {
+export default function ClaimsTable({
+  claims,
+  offerMap,
+  shiftMap,
+  profileMap,
+  positionMap,
+  isManager = false,
+}: Props) {
   return (
     <>
       <h2>Shift Claims</h2>
@@ -37,6 +49,7 @@ export default function ClaimsTable({ claims, offerMap, shiftMap, profileMap, po
             <th>Position</th>
             <th>Message</th>
             <th>Status</th>
+            {isManager && <th></th>}
           </tr>
         </thead>
         <tbody>
@@ -48,8 +61,24 @@ export default function ClaimsTable({ claims, offerMap, shiftMap, profileMap, po
                 <td>{profileMap[claim.claimant_id] ?? claim.claimant_id}</td>
                 <td>{shift ? new Date(shift.start_time).toLocaleString() : '—'}</td>
                 <td>{shift ? positionMap[shift.position_id] : '—'}</td>
-                <td>{claim.message}</td>
+                <td>{claim.message ?? '—'}</td>
                 <td>{claim.status}</td>
+                {isManager && (
+                  <td className="row-actions">
+                    {claim.status === 'pending' ? (
+                      <>
+                        <button className="btn-save" onClick={() => approveClaim(claim.id)}>
+                          Approve
+                        </button>
+                        <button className="btn-delete" onClick={() => denyClaim(claim.id)}>
+                          Deny
+                        </button>
+                      </>
+                    ) : (
+                      <span className="offered-badge">{claim.status}</span>
+                    )}
+                  </td>
+                )}
               </tr>
             );
           })}

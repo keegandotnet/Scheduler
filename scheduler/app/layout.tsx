@@ -50,7 +50,7 @@ export default async function RootLayout({
           <nav className="site-nav">
             <span className="site-nav-brand">Scheduler</span>
             <Link href="/shifts">Shifts</Link>
-            {userRole === 'manager' && <Link href="/offers">Offers</Link>}
+            <Link href="/offers">Offers</Link>
             {userRole === 'manager' && <Link href="/claims">Claims</Link>}
             <span className="site-nav-spacer" />
             <span className="site-nav-user">{userName}</span>
