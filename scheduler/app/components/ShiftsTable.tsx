@@ -52,6 +52,9 @@ export default function ShiftsTable({
 }: Props) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draft, setDraft] = useState<Draft | null>(null);
+  const [offeringShiftId, setOfferingShiftId] = useState<string | null>(null);
+  const [offerMessage, setOfferMessage] = useState('');
+  const [offerError, setOfferError] = useState('');
 
   function startEdit(shift: Shift) {
     setEditingId(shift.id);
@@ -81,6 +84,19 @@ export default function ShiftsTable({
     setDraft(null);
   }
 
+  async function submitOffer(shiftId: string) {
+    setOfferError('');
+    const result = await createOffer(shiftId, offerMessage);
+    if (result?.error) {
+      setOfferError(result.error);
+    } else {
+      setOfferingShiftId(null);
+      setOfferMessage('');
+    }
+  }
+
+  const colSpan = isManager || !!currentUserId ? 6 : 5;
+
   return (
     <>
       <h1>Shifts</h1>
@@ -98,68 +114,89 @@ export default function ShiftsTable({
         <tbody>
           {shifts.map((shift) => {
             const isEditing = editingId === shift.id;
+            const isOffering = offeringShiftId === shift.id;
+            const isOwn = shift.owner_id === currentUserId;
+            const alreadyOffered = offeredShiftIds.has(shift.id);
+
             return (
-              <tr key={shift.id}>
-                {isEditing && draft ? (
-                  <>
-                    <td>
-                      <select value={draft.owner_id} onChange={(e) => setDraft({ ...draft, owner_id: e.target.value })}>
-                        {employees.map((e) => <option key={e.id} value={e.id}>{e.full_name}</option>)}
-                      </select>
-                    </td>
-                    <td>
-                      <select value={draft.position_id} onChange={(e) => setDraft({ ...draft, position_id: e.target.value })}>
-                        {positions.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
-                      </select>
-                    </td>
-                    <td>
-                      <input
-                        type="datetime-local"
-                        value={draft.start_time}
-                        onChange={(e) => setDraft({ ...draft, start_time: e.target.value })}
-                      />
-                    </td>
-                    <td>
-                      <input
-                        type="datetime-local"
-                        value={draft.end_time}
-                        onChange={(e) => setDraft({ ...draft, end_time: e.target.value })}
-                      />
-                    </td>
-                    <td>{shift.status}</td>
-                    <td className="row-actions">
-                      <button className="btn-save" onClick={() => saveEdit(shift.id)}>Save</button>
-                      <button className="btn-cancel" onClick={cancelEdit}>Cancel</button>
-                    </td>
-                  </>
-                ) : (
-                  <>
-                    <td>{profileMap[shift.owner_id] ?? shift.owner_id}</td>
-                    <td>{positionMap[shift.position_id] ?? shift.position_id}</td>
-                    <td>{new Date(shift.start_time).toLocaleString()}</td>
-                    <td>{new Date(shift.end_time).toLocaleString()}</td>
-                    <td>{shift.status}</td>
-                    {isManager && (
-                      <td className="row-actions">
-                        <button className="btn-edit" onClick={() => startEdit(shift)}>Edit</button>
-                        <button className="btn-delete" onClick={() => deleteShift(shift.id)}>Delete</button>
+              <>
+                <tr key={shift.id}>
+                  {isEditing && draft ? (
+                    <>
+                      <td>
+                        <select value={draft.owner_id} onChange={(e) => setDraft({ ...draft, owner_id: e.target.value })}>
+                          {employees.map((e) => <option key={e.id} value={e.id}>{e.full_name}</option>)}
+                        </select>
                       </td>
-                    )}
-                    {!isManager && shift.owner_id === currentUserId && (
-                      <td className="row-actions">
-                        {offeredShiftIds.has(shift.id) ? (
-                          <span className="offered-badge">Offered</span>
-                        ) : (
-                          <button className="btn-offer" onClick={() => createOffer(shift.id)}>
-                            Offer for Swap
-                          </button>
-                        )}
+                      <td>
+                        <select value={draft.position_id} onChange={(e) => setDraft({ ...draft, position_id: e.target.value })}>
+                          {positions.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+                        </select>
                       </td>
-                    )}
-                    {!isManager && shift.owner_id !== currentUserId && <td />}
-                  </>
+                      <td>
+                        <input type="datetime-local" value={draft.start_time} onChange={(e) => setDraft({ ...draft, start_time: e.target.value })} />
+                      </td>
+                      <td>
+                        <input type="datetime-local" value={draft.end_time} onChange={(e) => setDraft({ ...draft, end_time: e.target.value })} />
+                      </td>
+                      <td>{shift.status}</td>
+                      <td className="row-actions">
+                        <button className="btn-save" onClick={() => saveEdit(shift.id)}>Save</button>
+                        <button className="btn-cancel" onClick={cancelEdit}>Cancel</button>
+                      </td>
+                    </>
+                  ) : (
+                    <>
+                      <td>{profileMap[shift.owner_id] ?? shift.owner_id}</td>
+                      <td>{positionMap[shift.position_id] ?? shift.position_id}</td>
+                      <td>{new Date(shift.start_time).toLocaleString()}</td>
+                      <td>{new Date(shift.end_time).toLocaleString()}</td>
+                      <td>{shift.status}</td>
+                      {isManager && (
+                        <td className="row-actions">
+                          <button className="btn-edit" onClick={() => startEdit(shift)}>Edit</button>
+                          <button className="btn-delete" onClick={() => deleteShift(shift.id)}>Delete</button>
+                        </td>
+                      )}
+                      {!isManager && isOwn && (
+                        <td className="row-actions">
+                          {alreadyOffered ? (
+                            <span className="offered-badge">Offered</span>
+                          ) : (
+                            <button
+                              className="btn-offer"
+                              onClick={() => { setOfferingShiftId(shift.id); setOfferMessage(''); setOfferError(''); }}
+                            >
+                              Offer for Swap
+                            </button>
+                          )}
+                        </td>
+                      )}
+                      {!isManager && !isOwn && <td />}
+                    </>
+                  )}
+                </tr>
+
+                {isOffering && (
+                  <tr key={`offer-form-${shift.id}`} className="inline-form-row">
+                    <td colSpan={colSpan}>
+                      <div className="inline-form">
+                        <textarea
+                          placeholder="Add a message (optional)…"
+                          value={offerMessage}
+                          onChange={(e) => setOfferMessage(e.target.value)}
+                          rows={2}
+                        />
+                        {offerError && <p className="inline-form-error">{offerError}</p>}
+                        <div className="inline-form-actions">
+                          <button className="btn-save" onClick={() => submitOffer(shift.id)}>Submit Offer</button>
+                          <button className="btn-cancel" onClick={() => { setOfferingShiftId(null); setOfferError(''); }}>Cancel</button>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
                 )}
-              </tr>
+              </>
             );
           })}
         </tbody>

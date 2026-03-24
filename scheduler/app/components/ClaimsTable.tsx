@@ -56,8 +56,10 @@ export default function ClaimsTable({
           {claims.map((claim) => {
             const offer = offerMap[claim.offer_id];
             const shift = offer ? shiftMap[offer.shift_id] : undefined;
+            const isPending = claim.status === 'pending';
+
             return (
-              <tr key={claim.id}>
+              <tr key={claim.id} className={claim.status === 'denied' ? 'row-denied' : claim.status === 'approved' ? 'row-approved' : ''}>
                 <td>{profileMap[claim.claimant_id] ?? claim.claimant_id}</td>
                 <td>{shift ? new Date(shift.start_time).toLocaleString() : '—'}</td>
                 <td>{shift ? positionMap[shift.position_id] : '—'}</td>
@@ -65,14 +67,14 @@ export default function ClaimsTable({
                 <td>{claim.status}</td>
                 {isManager && (
                   <td className="row-actions">
-                    {claim.status === 'pending' ? (
+                    {isPending ? (
                       <>
-                        <button className="btn-save" onClick={() => approveClaim(claim.id)}>
-                          Approve
-                        </button>
-                        <button className="btn-delete" onClick={() => denyClaim(claim.id)}>
-                          Deny
-                        </button>
+                        <form action={approveClaim.bind(null, claim.id)} style={{ display: 'inline' }}>
+                          <button type="submit" className="btn-save">Approve</button>
+                        </form>
+                        <form action={denyClaim.bind(null, claim.id)} style={{ display: 'inline' }}>
+                          <button type="submit" className="btn-delete">Deny</button>
+                        </form>
                       </>
                     ) : (
                       <span className="offered-badge">{claim.status}</span>

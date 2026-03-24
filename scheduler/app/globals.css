@@ -148,6 +148,47 @@ a {
   font-style: italic;
 }
 
+.inline-form-row td {
+  background: #f7f9ff;
+  padding: 0.75rem 1rem;
+}
+
+.inline-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-width: 480px;
+}
+
+.inline-form textarea {
+  padding: 0.4rem 0.6rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  font-family: inherit;
+  resize: vertical;
+}
+
+.inline-form-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.inline-form-error {
+  color: #c00;
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+.row-denied td {
+  color: #aaa;
+  text-decoration: line-through;
+}
+
+.row-approved td {
+  color: #080;
+}
+
 .create-shift-form {
   margin-bottom: 2rem;
   padding: 1.25rem;

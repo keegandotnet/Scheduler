@@ -19,11 +19,10 @@ async function getAuthenticatedUser() {
   return profile ?? null;
 }
 
-export async function createOffer(shiftId: string) {
+export async function createOffer(shiftId: string, message: string): Promise<{ error?: string }> {
   const user = await getAuthenticatedUser();
-  if (!user || user.role !== 'employee') return;
+  if (!user || user.role !== 'employee') return { error: 'Unauthorized.' };
 
-  // Guard: don't create a duplicate open offer
   const { data: existing } = await supabase
     .from('shift_offers')
     .select('id')
@@ -31,21 +30,23 @@ export async function createOffer(shiftId: string) {
     .eq('status', 'open')
     .maybeSingle();
 
-  if (existing) return;
+  if (existing) return { error: 'This shift already has an open offer.' };
 
   await supabase.from('shift_offers').insert({
     shift_id: shiftId,
     offered_by: user.id,
+    message: message.trim() || null,
     status: 'open',
   });
 
   revalidatePath('/shifts');
   revalidatePath('/offers');
+  return {};
 }
 
-export async function createClaim(offerId: string) {
+export async function createClaim(offerId: string, message: string): Promise<{ error?: string }> {
   const user = await getAuthenticatedUser();
-  if (!user || user.role !== 'employee') return;
+  if (!user || user.role !== 'employee') return { error: 'Unauthorized.' };
 
   // Guard: don't double-claim
   const { data: existing } = await supabase
@@ -55,23 +56,57 @@ export async function createClaim(offerId: string) {
     .eq('claimant_id', user.id)
     .maybeSingle();
 
-  if (existing) return;
+  if (existing) return { error: 'You have already claimed this offer.' };
+
+  // Overlap check: load offered shift times
+  const { data: offer } = await supabase
+    .from('shift_offers')
+    .select('shift_id')
+    .eq('id', offerId)
+    .single();
+
+  if (!offer) return { error: 'Offer not found.' };
+
+  const { data: offeredShift } = await supabase
+    .from('shifts')
+    .select('start_time, end_time')
+    .eq('id', offer.shift_id)
+    .single();
+
+  if (!offeredShift) return { error: 'Shift not found.' };
+
+  const { data: myShifts } = await supabase
+    .from('shifts')
+    .select('start_time, end_time')
+    .eq('owner_id', user.id);
+
+  const hasOverlap = (myShifts ?? []).some((s) => {
+    return (
+      new Date(s.start_time) < new Date(offeredShift.end_time) &&
+      new Date(s.end_time) > new Date(offeredShift.start_time)
+    );
+  });
+
+  if (hasOverlap) {
+    return { error: 'This shift overlaps with one of your existing shifts.' };
+  }
 
   await supabase.from('shift_claims').insert({
     offer_id: offerId,
     claimant_id: user.id,
+    message: message.trim() || null,
     status: 'pending',
   });
 
   revalidatePath('/offers');
   revalidatePath('/claims');
+  return {};
 }
 
 export async function approveClaim(claimId: string) {
   const user = await getAuthenticatedUser();
   if (!user || user.role !== 'manager') return;
 
-  // Load the claim → offer → shift
   const { data: claim } = await supabase
     .from('shift_claims')
     .select('offer_id, claimant_id')
@@ -88,13 +123,11 @@ export async function approveClaim(claimId: string) {
 
   if (!offer) return;
 
-  // Transfer the shift to the claimant
   await supabase
     .from('shifts')
     .update({ owner_id: claim.claimant_id })
     .eq('id', offer.shift_id);
 
-  // Approve this claim, deny all others for the same offer
   await supabase
     .from('shift_claims')
     .update({ status: 'approved' })
@@ -106,7 +139,6 @@ export async function approveClaim(claimId: string) {
     .eq('offer_id', claim.offer_id)
     .neq('id', claimId);
 
-  // Close the offer
   await supabase
     .from('shift_offers')
     .update({ status: 'closed' })

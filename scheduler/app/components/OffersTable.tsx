@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { createClaim } from '../actions/offers';
 
 type Shift = {
@@ -32,6 +33,23 @@ export default function OffersTable({
   currentUserId,
   claimedOfferIds = new Set(),
 }: Props) {
+  const [claimingOfferId, setClaimingOfferId] = useState<string | null>(null);
+  const [claimMessage, setClaimMessage] = useState('');
+  const [claimError, setClaimError] = useState('');
+
+  async function submitClaim(offerId: string) {
+    setClaimError('');
+    const result = await createClaim(offerId, claimMessage);
+    if (result?.error) {
+      setClaimError(result.error);
+    } else {
+      setClaimingOfferId(null);
+      setClaimMessage('');
+    }
+  }
+
+  const colSpan = currentUserId ? 5 : 4;
+
   return (
     <>
       <h2>Open Shift Offers</h2>
@@ -50,27 +68,53 @@ export default function OffersTable({
             const shift = shiftMap[offer.shift_id];
             const isOwn = offer.offered_by === currentUserId;
             const alreadyClaimed = claimedOfferIds.has(offer.id);
+            const isClaiming = claimingOfferId === offer.id;
 
             return (
-              <tr key={offer.id}>
-                <td>{profileMap[offer.offered_by] ?? offer.offered_by}</td>
-                <td>{shift ? positionMap[shift.position_id] : '—'}</td>
-                <td>{shift ? new Date(shift.start_time).toLocaleString() : '—'}</td>
-                <td>{offer.message ?? '—'}</td>
-                {currentUserId && (
-                  <td className="row-actions">
-                    {isOwn ? (
-                      <span className="offered-badge">Your offer</span>
-                    ) : alreadyClaimed ? (
-                      <span className="offered-badge">Claimed</span>
-                    ) : (
-                      <button className="btn-offer" onClick={() => createClaim(offer.id)}>
-                        Claim
-                      </button>
-                    )}
-                  </td>
+              <>
+                <tr key={offer.id}>
+                  <td>{profileMap[offer.offered_by] ?? offer.offered_by}</td>
+                  <td>{shift ? positionMap[shift.position_id] : '—'}</td>
+                  <td>{shift ? new Date(shift.start_time).toLocaleString() : '—'}</td>
+                  <td>{offer.message ?? '—'}</td>
+                  {currentUserId && (
+                    <td className="row-actions">
+                      {isOwn ? (
+                        <span className="offered-badge">Your offer</span>
+                      ) : alreadyClaimed ? (
+                        <span className="offered-badge">Claimed</span>
+                      ) : (
+                        <button
+                          className="btn-offer"
+                          onClick={() => { setClaimingOfferId(offer.id); setClaimMessage(''); setClaimError(''); }}
+                        >
+                          Claim
+                        </button>
+                      )}
+                    </td>
+                  )}
+                </tr>
+
+                {isClaiming && (
+                  <tr key={`claim-form-${offer.id}`} className="inline-form-row">
+                    <td colSpan={colSpan}>
+                      <div className="inline-form">
+                        <textarea
+                          placeholder="Add a message (optional)…"
+                          value={claimMessage}
+                          onChange={(e) => setClaimMessage(e.target.value)}
+                          rows={2}
+                        />
+                        {claimError && <p className="inline-form-error">{claimError}</p>}
+                        <div className="inline-form-actions">
+                          <button className="btn-save" onClick={() => submitClaim(offer.id)}>Submit Claim</button>
+                          <button className="btn-cancel" onClick={() => { setClaimingOfferId(null); setClaimError(''); }}>Cancel</button>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
                 )}
-              </tr>
+              </>
             );
           })}
         </tbody>
