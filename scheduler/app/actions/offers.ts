@@ -125,7 +125,7 @@ export async function approveClaim(claimId: string) {
 
   await supabase
     .from('shifts')
-    .update({ owner_id: claim.claimant_id })
+    .update({ owner_id: claim.claimant_id, status: 'completed' })
     .eq('id', offer.shift_id);
 
   await supabase

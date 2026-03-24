@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { approveClaim, denyClaim } from '../actions/offers';
 
 type Shift = {
@@ -39,9 +40,25 @@ export default function ClaimsTable({
   positionMap,
   isManager = false,
 }: Props) {
+  const [showResolved, setShowResolved] = useState(false);
+
+  const pendingClaims = claims.filter((c) => c.status === 'pending');
+  const resolvedClaims = claims.filter((c) => c.status !== 'pending');
+  const visibleClaims = showResolved ? claims : pendingClaims;
+
   return (
     <>
-      <h2>Shift Claims</h2>
+      <div className="section-header">
+        <h2>Shift Claims</h2>
+        {resolvedClaims.length > 0 && (
+          <button
+            className="btn-toggle"
+            onClick={() => setShowResolved((v) => !v)}
+          >
+            {showResolved ? 'Hide resolved' : `Show resolved (${resolvedClaims.length})`}
+          </button>
+        )}
+      </div>
       <table>
         <thead>
           <tr>
@@ -55,7 +72,10 @@ export default function ClaimsTable({
           </tr>
         </thead>
         <tbody>
-          {claims.map((claim) => {
+          {visibleClaims.length === 0 && (
+            <tr><td colSpan={isManager ? 7 : 6} style={{ textAlign: 'center', color: '#888' }}>No pending claims.</td></tr>
+          )}
+          {visibleClaims.map((claim) => {
             const offer = offerMap[claim.offer_id];
             const shift = offer ? shiftMap[offer.shift_id] : undefined;
             const isPending = claim.status === 'pending';

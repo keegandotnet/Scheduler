@@ -25,6 +25,8 @@ type Props = {
   positions?: Position[];
   currentUserId?: string;
   offeredShiftIds?: Set<string>;
+  title?: string;
+  readonly?: boolean;
 };
 
 type Draft = {
@@ -49,6 +51,8 @@ export default function ShiftsTable({
   positions = [],
   currentUserId,
   offeredShiftIds = new Set(),
+  title = 'Shifts',
+  readonly = false,
 }: Props) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draft, setDraft] = useState<Draft | null>(null);
@@ -95,11 +99,12 @@ export default function ShiftsTable({
     }
   }
 
-  const colSpan = isManager || !!currentUserId ? 6 : 5;
+  const hasActions = !readonly && (isManager || !!currentUserId);
+  const colSpan = hasActions ? 6 : 5;
 
   return (
     <>
-      <h1>Shifts</h1>
+      <h1>{title}</h1>
       <table>
         <thead>
           <tr>
@@ -108,7 +113,7 @@ export default function ShiftsTable({
             <th>Start</th>
             <th>End</th>
             <th>Status</th>
-            {(isManager || !!currentUserId) && <th></th>}
+            {hasActions && <th></th>}
           </tr>
         </thead>
         <tbody>
@@ -152,13 +157,13 @@ export default function ShiftsTable({
                       <td>{new Date(shift.start_time).toLocaleString()}</td>
                       <td>{new Date(shift.end_time).toLocaleString()}</td>
                       <td>{shift.status}</td>
-                      {isManager && (
+                      {!readonly && isManager && (
                         <td className="row-actions">
                           <button className="btn-edit" onClick={() => startEdit(shift)}>Edit</button>
                           <button className="btn-delete" onClick={() => deleteShift(shift.id)}>Delete</button>
                         </td>
                       )}
-                      {!isManager && isOwn && (
+                      {!readonly && !isManager && isOwn && (
                         <td className="row-actions">
                           {alreadyOffered ? (
                             <span className="offered-badge">Offered</span>
@@ -172,7 +177,7 @@ export default function ShiftsTable({
                           )}
                         </td>
                       )}
-                      {!isManager && !isOwn && <td />}
+                      {!readonly && !isManager && !isOwn && <td />}
                     </>
                   )}
                 </tr>
