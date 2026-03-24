@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 import { createAuthClient } from '../../lib/supabase-auth';
 import { supabase } from '../../lib/supabase';
-import ShiftsTable from '../components/ShiftsTable';
+import ShiftsView from '../components/ShiftsView';
 import CreateShiftForm from '../components/CreateShiftForm';
 
 const ACTIVE_STATUSES = ['scheduled', 'offered', 'swap_pending'];
@@ -34,7 +34,6 @@ export default async function ShiftsPage() {
       }),
     supabase.from('profiles').select('id, full_name, role'),
     supabase.from('positions').select('id, name'),
-    // Only need current user's own open offers (for the withdraw button)
     supabase
       .from('shift_offers')
       .select('id, shift_id')
@@ -42,67 +41,44 @@ export default async function ShiftsPage() {
       .eq('status', 'open'),
   ]);
 
-  const profileMap = Object.fromEntries((profiles ?? []).map((p) => [p.id, p.full_name]));
+  const profileMap  = Object.fromEntries((profiles ?? []).map((p) => [p.id, p.full_name]));
   const positionMap = Object.fromEntries((positions ?? []).map((p) => [p.id, p.name]));
+  const positionIds = (positions ?? []).map((p) => p.id);
 
-  const employees = (profiles ?? [])
-    .filter((p) => p.role === 'employee')
-    .map(({ id, full_name }) => ({ id, full_name }));
-
+  const employees   = (profiles ?? []).filter((p) => p.role === 'employee').map(({ id, full_name }) => ({ id, full_name }));
   const positionList = (positions ?? []).map(({ id, name }) => ({ id, name }));
 
-  // shift_id → offer_id for current user's open offers
   const myOpenOfferByShiftId: Record<string, string> = Object.fromEntries(
     (myOpenOffers ?? []).map((o) => [o.shift_id, o.id])
   );
 
-  const activeShifts = (allShifts ?? []).filter(
-    (s) => s.end_time >= now && ACTIVE_STATUSES.includes(s.status)
-  );
-  const pastShifts = (allShifts ?? []).filter(
-    (s) => s.end_time < now && s.status !== 'completed'
-  );
+  const activeShifts    = (allShifts ?? []).filter((s) => s.end_time >= now && ACTIVE_STATUSES.includes(s.status));
+  const pastShifts      = (allShifts ?? []).filter((s) => s.end_time < now && s.status !== 'completed');
   const completedShifts = (allShifts ?? []).filter((s) => s.status === 'completed');
 
   return (
-    <main>
-      {!isEmployee && (
-        <CreateShiftForm employees={employees} positions={positionList} />
-      )}
-      <ShiftsTable
-        shifts={activeShifts}
-        profileMap={profileMap}
-        positionMap={positionMap}
-        isManager={!isEmployee}
-        employees={employees}
-        positions={positionList}
-        currentUserId={isEmployee ? claims.sub : undefined}
-        myOpenOfferByShiftId={myOpenOfferByShiftId}
-      />
-      {pastShifts.length > 0 && (
-        <ShiftsTable
-          shifts={pastShifts}
+    <>
+      <div className="page-header">
+        <h1 className="page-title">Shifts</h1>
+        {!isEmployee && (
+          <CreateShiftForm employees={employees} positions={positionList} />
+        )}
+      </div>
+      <div className="page-body">
+        <ShiftsView
+          activeShifts={activeShifts}
+          pastShifts={pastShifts}
+          completedShifts={completedShifts}
           profileMap={profileMap}
           positionMap={positionMap}
-          isManager={false}
-          employees={[]}
+          positionIds={positionIds}
+          isManager={!isEmployee}
+          employees={employees}
           positions={positionList}
-          title="Past Shifts"
-          readonly
+          currentUserId={isEmployee ? claims.sub : undefined}
+          myOpenOfferByShiftId={myOpenOfferByShiftId}
         />
-      )}
-      {completedShifts.length > 0 && (
-        <ShiftsTable
-          shifts={completedShifts}
-          profileMap={profileMap}
-          positionMap={positionMap}
-          isManager={false}
-          employees={[]}
-          positions={positionList}
-          title="Completed Swaps"
-          readonly
-        />
-      )}
-    </main>
+      </div>
+    </>
   );
 }

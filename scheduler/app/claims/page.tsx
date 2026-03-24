@@ -31,15 +31,13 @@ export default async function ClaimsPage() {
   const offerMap = Object.fromEntries((offers ?? []).map((o) => [o.id, o]));
 
   return (
-    <main>
-      <ClaimsTable
-        claims={shiftClaims ?? []}
-        offerMap={offerMap}
-        shiftMap={shiftMap}
-        profileMap={profileMap}
-        positionMap={positionMap}
-        isManager={true}
-      />
-    </main>
+    <ClaimsTable
+      claims={shiftClaims ?? []}
+      offerMap={offerMap}
+      shiftMap={shiftMap}
+      profileMap={profileMap}
+      positionMap={positionMap}
+      isManager={true}
+    />
   );
 }

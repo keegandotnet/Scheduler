@@ -35,15 +35,13 @@ export default async function OffersPage() {
   );
 
   return (
-    <main>
-      <OffersTable
-        offers={offers ?? []}
-        shiftMap={shiftMap}
-        profileMap={profileMap}
-        positionMap={positionMap}
-        currentUserId={isEmployee ? claims.sub : undefined}
-        myClaimByOfferId={myClaimByOfferId}
-      />
-    </main>
+    <OffersTable
+      offers={offers ?? []}
+      shiftMap={shiftMap}
+      profileMap={profileMap}
+      positionMap={positionMap}
+      currentUserId={isEmployee ? claims.sub : undefined}
+      myClaimByOfferId={myClaimByOfferId}
+    />
   );
 }
