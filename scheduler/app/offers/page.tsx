@@ -1,7 +1,21 @@
+import { redirect } from 'next/navigation';
+import { createAuthClient } from '../../lib/supabase-auth';
 import { supabase } from '../../lib/supabase';
 import OffersTable from '../components/OffersTable';
 
 export default async function OffersPage() {
+  const authClient = await createAuthClient();
+  const { data: { claims } } = await authClient.auth.getClaims();
+  if (!claims) redirect('/login');
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', claims.sub)
+    .single();
+
+  if (profile?.role !== 'manager') redirect('/shifts');
+
   const [{ data: shifts }, { data: profiles }, { data: positions }, { data: offers }] = await Promise.all([
     supabase.from('shifts').select('id, position_id, start_time'),
     supabase.from('profiles').select('id, full_name'),

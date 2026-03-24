@@ -1,9 +1,32 @@
+import { redirect } from 'next/navigation';
+import { createAuthClient } from '../../lib/supabase-auth';
 import { supabase } from '../../lib/supabase';
 import ShiftsTable from '../components/ShiftsTable';
 
 export default async function ShiftsPage() {
+  const authClient = await createAuthClient();
+  const { data: { claims } } = await authClient.auth.getClaims();
+  if (!claims) redirect('/login');
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', claims.sub)
+    .single();
+
+  const isEmployee = profile?.role === 'employee';
+
   const [{ data: shifts }, { data: profiles }, { data: positions }] = await Promise.all([
-    supabase.from('shifts').select('id, owner_id, position_id, start_time, end_time, status').order('start_time'),
+    supabase
+      .from('shifts')
+      .select('id, owner_id, position_id, start_time, end_time, status')
+      .order('start_time')
+      .then((res) => {
+        if (isEmployee) {
+          return { data: (res.data ?? []).filter((s) => s.owner_id === claims.sub) };
+        }
+        return res;
+      }),
     supabase.from('profiles').select('id, full_name'),
     supabase.from('positions').select('id, name'),
   ]);

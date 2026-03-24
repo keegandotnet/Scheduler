@@ -53,7 +53,28 @@ a {
 
 .site-nav-brand {
   font-weight: 700;
-  margin-right: auto;
+}
+
+.site-nav-spacer {
+  flex: 1;
+}
+
+.site-nav-user {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.site-nav-logout {
+  font-size: 0.9rem;
+  background: none;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 0.25rem 0.75rem;
+  cursor: pointer;
+}
+
+.site-nav-logout:hover {
+  background: #f4f4f4;
 }
 
 .site-nav a {
@@ -63,6 +84,57 @@ a {
 
 .site-nav a:hover {
   color: #000;
+}
+
+.login-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  gap: 1.5rem;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+  max-width: 320px;
+}
+
+.login-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.login-form input {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.login-form button {
+  padding: 0.6rem;
+  background: #000;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.login-form button:hover {
+  background: #333;
+}
+
+.login-error {
+  color: #c00;
+  font-size: 0.875rem;
 }
 
 main {
