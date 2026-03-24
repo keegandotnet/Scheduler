@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 import { deleteShift, updateShift } from '../actions/shifts';
 import { createOffer } from '../actions/offers';
 
@@ -119,8 +119,8 @@ export default function ShiftsTable({
             const alreadyOffered = offeredShiftIds.has(shift.id);
 
             return (
-              <>
-                <tr key={shift.id}>
+              <Fragment key={shift.id}>
+                <tr>
                   {isEditing && draft ? (
                     <>
                       <td>
@@ -178,7 +178,7 @@ export default function ShiftsTable({
                 </tr>
 
                 {isOffering && (
-                  <tr key={`offer-form-${shift.id}`} className="inline-form-row">
+                  <tr className="inline-form-row">
                     <td colSpan={colSpan}>
                       <div className="inline-form">
                         <textarea
@@ -196,7 +196,7 @@ export default function ShiftsTable({
                     </td>
                   </tr>
                 )}
-              </>
+              </Fragment>
             );
           })}
         </tbody>

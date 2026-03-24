@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 import { createClaim } from '../actions/offers';
 
 type Shift = {
@@ -71,8 +71,8 @@ export default function OffersTable({
             const isClaiming = claimingOfferId === offer.id;
 
             return (
-              <>
-                <tr key={offer.id}>
+              <Fragment key={offer.id}>
+                <tr>
                   <td>{profileMap[offer.offered_by] ?? offer.offered_by}</td>
                   <td>{shift ? positionMap[shift.position_id] : '—'}</td>
                   <td>{shift ? new Date(shift.start_time).toLocaleString() : '—'}</td>
@@ -96,7 +96,7 @@ export default function OffersTable({
                 </tr>
 
                 {isClaiming && (
-                  <tr key={`claim-form-${offer.id}`} className="inline-form-row">
+                  <tr className="inline-form-row">
                     <td colSpan={colSpan}>
                       <div className="inline-form">
                         <textarea
@@ -114,7 +114,7 @@ export default function OffersTable({
                     </td>
                   </tr>
                 )}
-              </>
+              </Fragment>
             );
           })}
         </tbody>
