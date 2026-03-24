@@ -1,6 +1,0 @@
-{"sessionId":"4414c7","location":"offers.ts:denyClaim:entry","message":"denyClaim called","data":{"claimId":"0950e434-5566-4ef1-8db3-66437456d45f","claimIdType":"string"},"timestamp":1774369406039,"hypothesisId":"A"}
-{"sessionId":"4414c7","location":"offers.ts:denyClaim:authCheck","message":"auth result","data":{"userId":"35f6175a-7f16-4691-b2e8-f627c1019d64","role":"manager","isNull":false},"timestamp":1774369406216,"hypothesisId":"B"}
-{"sessionId":"4414c7","location":"offers.ts:denyClaim:update","message":"supabase update result","data":{"updatedRows":1,"hasError":false},"timestamp":1774369406375,"hypothesisId":"C","runId":"post-fix"}
-{"sessionId":"4414c7","location":"offers.ts:denyClaim:entry","message":"denyClaim called","data":{"claimId":"0950e434-5566-4ef1-8db3-66437456d45f","claimIdType":"string"},"timestamp":1774369406612,"hypothesisId":"A"}
-{"sessionId":"4414c7","location":"offers.ts:denyClaim:authCheck","message":"auth result","data":{"userId":"35f6175a-7f16-4691-b2e8-f627c1019d64","role":"manager","isNull":false},"timestamp":1774369406781,"hypothesisId":"B"}
-{"sessionId":"4414c7","location":"offers.ts:denyClaim:update","message":"supabase update result","data":{"updatedRows":1,"hasError":false},"timestamp":1774369406916,"hypothesisId":"C","runId":"post-fix"}
