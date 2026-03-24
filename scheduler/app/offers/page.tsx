@@ -1,0 +1,21 @@
+import { supabase } from '../../lib/supabase';
+import OffersTable from '../components/OffersTable';
+
+export default async function OffersPage() {
+  const [{ data: shifts }, { data: profiles }, { data: positions }, { data: offers }] = await Promise.all([
+    supabase.from('shifts').select('id, position_id, start_time'),
+    supabase.from('profiles').select('id, full_name'),
+    supabase.from('positions').select('id, name'),
+    supabase.from('shift_offers').select('id, shift_id, offered_by, message, status').eq('status', 'open'),
+  ]);
+
+  const profileMap = Object.fromEntries((profiles ?? []).map((p) => [p.id, p.full_name]));
+  const positionMap = Object.fromEntries((positions ?? []).map((p) => [p.id, p.name]));
+  const shiftMap = Object.fromEntries((shifts ?? []).map((s) => [s.id, s]));
+
+  return (
+    <main>
+      <OffersTable offers={offers ?? []} shiftMap={shiftMap} profileMap={profileMap} positionMap={positionMap} />
+    </main>
+  );
+}
