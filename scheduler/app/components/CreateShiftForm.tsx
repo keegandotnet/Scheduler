@@ -1,6 +1,6 @@
 'use client';
 
-import { useActionState } from 'react';
+import { useRef } from 'react';
 import { createShift } from '../actions/shifts';
 
 type Profile = { id: string; full_name: string };
@@ -12,13 +12,17 @@ type Props = {
 };
 
 export default function CreateShiftForm({ employees, positions }: Props) {
-  const [, action, pending] = useActionState(async (_: unknown, formData: FormData) => {
-    await createShift(formData);
-    return null;
-  }, null);
+  const endTimeRef = useRef<HTMLInputElement>(null);
+
+  function handleStartChange(e: React.ChangeEvent<HTMLInputElement>) {
+    if (!e.target.value || !endTimeRef.current) return;
+    const end = new Date(new Date(e.target.value).getTime() + 4 * 60 * 60 * 1000);
+    const pad = (n: number) => String(n).padStart(2, '0');
+    endTimeRef.current.value = `${end.getFullYear()}-${pad(end.getMonth() + 1)}-${pad(end.getDate())}T${pad(end.getHours())}:${pad(end.getMinutes())}`;
+  }
 
   return (
-    <form action={action} className="create-shift-form">
+    <form action={createShift} className="create-shift-form">
       <h2>New Shift</h2>
       <div className="create-shift-fields">
         <label>
@@ -41,15 +45,13 @@ export default function CreateShiftForm({ employees, positions }: Props) {
         </label>
         <label>
           Start
-          <input name="start_time" type="datetime-local" required />
+          <input name="start_time" type="datetime-local" required onChange={handleStartChange} />
         </label>
         <label>
           End
-          <input name="end_time" type="datetime-local" required />
+          <input name="end_time" type="datetime-local" required ref={endTimeRef} />
         </label>
-        <button type="submit" disabled={pending}>
-          {pending ? 'Saving…' : 'Create Shift'}
-        </button>
+        <button type="submit">Create Shift</button>
       </div>
     </form>
   );
