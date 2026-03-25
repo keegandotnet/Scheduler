@@ -32,12 +32,14 @@ export async function createOffer(shiftId: string, message: string): Promise<{ e
 
   if (existing) return { error: 'This shift already has an open offer.' };
 
-  await supabase.from('shift_offers').insert({
+  const offerInsert = await supabase.from('shift_offers').insert({
     shift_id: shiftId,
     offered_by: user.id,
     message: message.trim() || null,
     status: 'open',
   });
+
+  if (offerInsert.error) return { error: offerInsert.error.message };
 
   revalidatePath('/shifts');
   revalidatePath('/offers');
@@ -91,12 +93,14 @@ export async function createClaim(offerId: string, message: string): Promise<{ e
     return { error: 'This shift overlaps with one of your existing shifts.' };
   }
 
-  await supabase.from('shift_claims').insert({
+  const insertResult = await supabase.from('shift_claims').insert({
     offer_id: offerId,
     claimant_id: user.id,
     message: message.trim() || null,
     status: 'pending',
   });
+
+  if (insertResult.error) return { error: insertResult.error.message };
 
   revalidatePath('/offers');
   revalidatePath('/claims');
