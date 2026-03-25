@@ -17,9 +17,14 @@ type Props = {
 };
 
 function fmtDateTime(iso: string) {
-  return new Date(iso).toLocaleString('en-US', {
-    month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true,
-  });
+  const d = new Date(iso);
+  const datePart = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' }).format(d);
+  const timePart = new Intl.DateTimeFormat('en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  }).format(d);
+  return `${datePart}, ${timePart}`;
 }
 
 export default function OffersTable({
